@@ -1,0 +1,4 @@
+youtube-transcript-api
+langdetect
+deep-translator
+requests
