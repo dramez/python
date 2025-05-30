@@ -1,2 +1,0 @@
-# Lotto lotery game
-# Template
