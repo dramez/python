@@ -1,1 +1,1 @@
-# python
+This is a testing repository for learning purposes only.
