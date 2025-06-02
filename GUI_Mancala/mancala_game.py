@@ -1,4 +1,4 @@
-#test comment
+#test comment extended
 import tkinter as tk
 from tkinter import messagebox
 import time # For potential animation delays
