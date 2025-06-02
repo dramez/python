@@ -1,4 +1,4 @@
-#This file is wrong
+#This file is wrong or not
 import tkinter as tk
 from tkinter import messagebox
 import math
