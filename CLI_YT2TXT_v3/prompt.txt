@@ -1,0 +1,56 @@
+Create a complete Python application with the following requirements. Generate the entire project structure, including all necessary files (main script, modules, requirements.txt, README.md, etc.), and provide clear comments in the code.
+Application Description
+
+The application downloads a YouTube video transcript, automatically detects the transcript language, and allows the user to:
+
+    Choose a target language for translation from the following options:
+    'en': 'English', 'es': 'Spanish', 'fr': 'French', 'de': 'German', 'it': 'Italian', 'pl': 'Polish', 'pt': 'Portuguese', 'ru': 'Russian', 'ja': 'Japanese', 'ko': 'Korean', 'zh': 'Chinese'
+    Select a local LLM model from Ollama to use for transcription and summary (let the user pick from available models).
+    Choose the type of summary:
+        Brief summary (2-3 sentences)
+        Detailed summary with key points
+        Bullet-point summary
+
+Application Workflow
+
+    Input:
+        Ask the user for a YouTube video URL.
+        Ask the user to select a target language for translation (from the list above).
+        Ask the user to select a local LLM model from Ollama for transcription/summary.
+        Ask the user to select the summary type.
+    Transcript Download & Detection:
+        Download the transcript of the YouTube video.
+        Automatically detect the language of the transcript.
+    Transcription Storage:
+        Save the full transcript in the original language to a local file (do not display on screen).
+    Translation:
+        Translate the full transcript to the user-selected language.
+        Save the translated transcript to a local file (do not display on screen).
+    Summarization:
+        Summarize the original transcript using the selected LLM model and summary type.
+        Save the summary in the original language to a local file and display it on screen.
+    Summary Translation:
+        Translate the summary to the user-selected language.
+        Save the translated summary to a local file and display it on screen.
+
+Project Structure
+
+    README.md with setup and usage instructions.
+    requirements.txt with all dependencies.
+    main.py as the entry point.
+    Separate modules for:
+        YouTube transcript downloading
+        Language detection
+        Translation
+        LLM model selection and summarization
+        File I/O utilities
+    All code should be well-commented and modular.
+
+Additional Notes
+
+    Use only open-source Python libraries (e.g., yt-dlp or youtube-transcript-api for transcripts, langdetect or langid for language detection, googletrans or deep-translator for translation, and integrate with Ollama for local LLMs).
+    Ensure robust error handling and user-friendly prompts.
+    Do not display full transcripts or translations on screen—only summaries.
+    Summaries (both original and translated) should be shown on screen and saved to files.
+
+Generate the entire project as a code block, including all files and their contents.

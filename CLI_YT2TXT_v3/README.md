@@ -1,56 +1,87 @@
-# YouTube Transcript Summarizer & Translator
+# YouTube Transcript Processor
 
-This command-line application allows you to download the transcript of any YouTube video, summarize it using a locally running Ollama LLM, and translate both the transcript and the summary into a language of your choice.
+A Python application that downloads YouTube video transcripts, detects language, translates content, and generates summaries using local LLM models via Ollama.
 
 ## Features
 
--   Downloads video transcripts directly from YouTube.
--   Automatically detects the original language of the transcript.
--   Lets you choose a target language for translation from a predefined list.
--   Integrates with your local Ollama instance, allowing you to select any of your available models for summarization.
--   Offers multiple summary formats: brief, detailed, or bullet points.
--   Saves all artifacts (original transcript, translated transcript, original summary, translated summary) to a local `output` directory.
--   Displays the original and translated summaries directly in your terminal.
+- Download YouTube video transcripts
+- Automatic language detection
+- Translation to multiple languages
+- Local LLM integration via Ollama
+- Multiple summary types (brief, detailed, bullet-point)
+- File-based output management
 
 ## Prerequisites
 
--   Python 3.8 or higher.
--   [Ollama](https://ollama.com/) installed and running on your local machine.
--   At least one model pulled in Ollama (e.g., `ollama pull llama3`).
+1. **Python 3.8+**
+2. **Ollama installed and running**
+   - Install Ollama from: https://ollama.ai/
+   - Pull at least one model (e.g., `ollama pull llama2`)
 
-## Setup
+## Installation
 
-1.  **Clone the repository or download the source code:**
-    ```bash
-    git clone <repository_url>
-    cd youtube-summarizer
-    ```
+1. Clone or download this project
+2. Install dependencies:
+   ```bash
+   pip install -r requirements.txt
 
-2.  **Create and activate a virtual environment (recommended):**
-    ```bash
-    python -m venv venv
-    source venv/bin/activate  # On Windows, use `venv\Scripts\activate`
-    ```
+Usage
 
-3.  **Install the required dependencies:**
-    ```bash
-    pip install -r requirements.txt
-    ```
+    Start Ollama service:
 
-## How to Run
+    bash
 
-1.  **Ensure Ollama is running:**
-    Open a separate terminal and simply run the command `ollama serve` or ensure the desktop application is running.
+Copy Code
+ollama serve
 
-2.  **Run the main script:**
-    ```bash
+Run the application:
+
+bash
+
+    Copy Code
     python main.py
-    ```
 
-3.  **Follow the on-screen prompts:**
-    -   Enter the YouTube video URL.
-    -   Choose a target language.
-    -   Select an available Ollama model.
-    -   Pick a summary type.
+    Follow the interactive prompts:
+        Enter YouTube video URL
+        Select target language
+        Choose LLM model
+        Select summary type
 
-The application will then process the video and display the summaries. The output files will be saved in the `output/` directory.
+Output Files
+
+All output files are saved in the output/ directory:
+
+    original_transcript.txt - Original transcript
+    translated_transcript.txt - Translated transcript
+    original_summary.txt - Summary in original language
+    translated_summary.txt - Translated summary
+
+Supported Languages
+
+    English (en)
+    Spanish (es)
+    French (fr)
+    German (de)
+    Italian (it)
+    Polish (pl)
+    Portuguese (pt)
+    Russian (ru)
+    Japanese (ja)
+    Korean (ko)
+    Chinese (zh)
+
+Troubleshooting
+
+    Ensure Ollama is running before starting the application
+    Check that you have at least one Ollama model installed
+    Verify YouTube URL is valid and has available transcripts
+    Check internet connection for translation services
+
+
+## requirements.txt
+
+youtube-transcript-api==0.6.1
+langdetect==1.0.9
+deep-translator==1.11.4
+requests==2.31.0
+ollama==0.1.7
