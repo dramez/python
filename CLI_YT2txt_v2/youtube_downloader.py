@@ -10,11 +10,11 @@ def get_youtube_transcript(video_url: str) -> tuple[str | None, str | None]:
     It tries to fetch and parse available transcripts, attempting alternatives if one fails.
 
     Args:
-        video_url (str): The URL of the YouTube video.
+    video_url (str): The URL of the YouTube video.
 
     Returns:
-        tuple[str | None, str | None]: A tuple containing (transcript_text, video_id).
-                                       Returns (None, video_id) or (None, None) on failure.
+    tuple[str | None, str | None]: A tuple containing (transcript_text, video_id).
+    Returns (None, video_id) or (None, None) on failure.
     """
     video_id = None
     try:
@@ -57,7 +57,8 @@ def get_youtube_transcript(video_url: str) -> tuple[str | None, str | None]:
                   f"Language '{transcript_candidate.language_code}', Type '{transcript_type}'...")
             try:
                 transcript_data = transcript_candidate.fetch()
-                full_transcript = " ".join([item['text'] for item in transcript_data])
+                # FIX: Use .text attribute instead of ['text'] dictionary access
+                full_transcript = " ".join([item.text for item in transcript_data])
                 print(f"Successfully fetched and parsed transcript: Lang '{transcript_candidate.language_code}', Type '{transcript_type}'.")
                 return full_transcript, video_id
             except xml.etree.ElementTree.ParseError as e_xml:
