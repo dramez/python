@@ -8,6 +8,8 @@ translates content, and generates summaries using local LLM models.
 
 import os
 import sys
+import re
+from datetime import datetime
 from modules.transcript_downloader import TranscriptDownloader
 from modules.language_detector import LanguageDetector
 from modules.translator import Translator
@@ -48,6 +50,67 @@ def print_banner():
     print("• AI-powered summarization with local LLMs")
     print("=" * 60)
     print()
+
+def sanitize_filename(text):
+    """
+    Sanitize text for use in filename.
+    
+    Args:
+        text (str): Text to sanitize
+        
+    Returns:
+        str: Sanitized text safe for filename
+    """
+    # Remove or replace invalid characters
+    sanitized = re.sub(r'[<>:"/\\|?*%\[\]]', '_', text)
+    # Remove multiple underscores
+    sanitized = re.sub(r'_+', '_', sanitized)
+    # Remove leading/trailing underscores
+    sanitized = sanitized.strip('_')
+    # Limit length
+    if len(sanitized) > 50:
+        sanitized = sanitized[:50]
+    return sanitized
+
+def extract_video_id_from_url(url):
+    """
+    Extract video ID from YouTube URL for filename.
+    
+    Args:
+        url (str): YouTube URL
+        
+    Returns:
+        str: Video ID or sanitized URL portion
+    """
+    patterns = [
+        r'(?:youtube\.com/watch\?v=|youtu\.be/|youtube\.com/embed/)([^&\n?#]+)',
+        r'youtube\.com/watch\?.*v=([^&\n?#]+)'
+    ]
+    
+    for pattern in patterns:
+        match = re.search(pattern, url)
+        if match:
+            return match.group(1)
+    
+    # If no video ID found, use sanitized URL
+    return sanitize_filename(url)
+
+def generate_filename_base(url, model_name):
+    """
+    Generate base filename with timestamp, URL, and model.
+    
+    Args:
+        url (str): YouTube URL
+        model_name (str): Ollama model name
+        
+    Returns:
+        str: Base filename without extension
+    """
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    video_id = extract_video_id_from_url(url)
+    sanitized_model = sanitize_filename(model_name)
+    
+    return f"{timestamp}_{video_id}_{sanitized_model}"
 
 def get_youtube_url():
     """Get and validate YouTube URL from user."""
@@ -155,6 +218,9 @@ def process_transcript(url, target_lang, summary_type, selected_model):
     # Ensure output directory exists
     os.makedirs('output', exist_ok=True)
     
+    # Generate filename base
+    filename_base = generate_filename_base(url, selected_model)
+    
     print("\n" + "=" * 60)
     print("                    PROCESSING")
     print("=" * 60)
@@ -168,7 +234,7 @@ def process_transcript(url, target_lang, summary_type, selected_model):
         print("   • Video has no available transcript")
         print("   • Video is private or restricted")
         print("   • Invalid URL")
-        return False
+        return False, None
     
     print(f"✅ Transcript downloaded successfully ({len(transcript)} characters)")
     
@@ -182,30 +248,36 @@ def process_transcript(url, target_lang, summary_type, selected_model):
         lang_name = SUPPORTED_LANGUAGES.get(detected_lang, detected_lang)
         print(f"✅ Detected language: {lang_name} ({detected_lang})")
     
+    # Generate filenames with dynamic naming
+    original_transcript_file = f'output/{filename_base}_original_transcript.txt'
+    translated_transcript_file = f'output/{filename_base}_translated_transcript.txt'
+    original_summary_file = f'output/{filename_base}_original_summary.txt'
+    translated_summary_file = f'output/{filename_base}_translated_summary.txt'
+    
     # Step 3: Save original transcript
     print("\n💾 STEP 3: Saving original transcript...")
-    file_utils.save_transcript(transcript, 'output/original_transcript.txt')
+    file_utils.save_transcript(transcript, original_transcript_file)
     
     # Step 4: Translate transcript if needed
     print(f"\n🌐 STEP 4: Translation to {SUPPORTED_LANGUAGES[target_lang]}...")
     if detected_lang != target_lang:
         print("   Translating transcript...")
         translated_transcript = translator.translate_text(transcript, target_lang)
-        file_utils.save_transcript(translated_transcript, 'output/translated_transcript.txt')
+        file_utils.save_transcript(translated_transcript, translated_transcript_file)
         print("✅ Translation completed")
     else:
         print("✅ Target language matches detected language, no translation needed")
         translated_transcript = transcript
-        file_utils.save_transcript(transcript, 'output/translated_transcript.txt')
+        file_utils.save_transcript(transcript, translated_transcript_file)
     
     # Step 5: Generate summary
     print(f"\n🤖 STEP 5: Generating {summary_type} summary with {selected_model}...")
     summary = llm_processor.generate_summary(transcript, summary_type, selected_model)
     if not summary:
         print("❌ Failed to generate summary")
-        return False
+        return False, None
     
-    file_utils.save_transcript(summary, 'output/original_summary.txt')
+    file_utils.save_transcript(summary, original_summary_file)
     print("✅ Summary generated successfully")
     
     # Step 6: Translate summary if needed
@@ -213,12 +285,12 @@ def process_transcript(url, target_lang, summary_type, selected_model):
     if detected_lang != target_lang:
         print(f"   Translating summary to {SUPPORTED_LANGUAGES[target_lang]}...")
         translated_summary = translator.translate_text(summary, target_lang)
-        file_utils.save_transcript(translated_summary, 'output/translated_summary.txt')
+        file_utils.save_transcript(translated_summary, translated_summary_file)
         print("✅ Summary translation completed")
     else:
         print("✅ Summary already in target language")
         translated_summary = summary
-        file_utils.save_transcript(summary, 'output/translated_summary.txt')
+        file_utils.save_transcript(summary, translated_summary_file)
     
     # Display results
     print("\n" + "=" * 60)
@@ -234,16 +306,15 @@ def process_transcript(url, target_lang, summary_type, selected_model):
         print("-" * 50)
         print(translated_summary)
     
-    print("\n" + "=" * 60)
-    print("                 FILES SAVED")
-    print("=" * 60)
-    print("📁 All files saved in 'output/' directory:")
-    print("   • original_transcript.txt")
-    print("   • translated_transcript.txt")
-    print("   • original_summary.txt")
-    print("   • translated_summary.txt")
+    # Return file information
+    files_created = {
+        'original_transcript': original_transcript_file,
+        'translated_transcript': translated_transcript_file,
+        'original_summary': original_summary_file,
+        'translated_summary': translated_summary_file
+    }
     
-    return True
+    return True, files_created
 
 def main():
     """Main application workflow."""
@@ -273,15 +344,28 @@ def main():
         print(f"📝 Summary Type: {summary_type}")
         print(f"🤖 LLM Model: {selected_model}")
         
+        # Show filename preview
+        filename_base = generate_filename_base(url, selected_model)
+        print(f"📁 Files will be named: {filename_base}_[type].txt")
+        
         confirm = input("\nProceed with processing? (y/n): ").strip().lower()
         if confirm not in ['y', 'yes']:
             print("❌ Processing cancelled by user.")
             return
         
         # Process transcript
-        success = process_transcript(url, target_lang, summary_type, selected_model)
+        success, files_created = process_transcript(url, target_lang, summary_type, selected_model)
         
-        if success:
+        if success and files_created:
+            print("\n" + "=" * 60)
+            print("                 FILES SAVED")
+            print("=" * 60)
+            print("📁 Files created:")
+            for file_type, filepath in files_created.items():
+                filename = os.path.basename(filepath)
+                print(f"   • {filename}")
+            
+            print(f"\n📂 All files saved in 'output/' directory")
             print("\n🎉 Processing completed successfully!")
         else:
             print("\n❌ Processing failed. Please check the errors above.")

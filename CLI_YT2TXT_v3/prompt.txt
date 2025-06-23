@@ -32,6 +32,12 @@ Application Workflow
     Summary Translation:
         Translate the summary to the user-selected language.
         Save the translated summary to a local file and display it on screen.
+    Output:
+       Store original transcript
+       Store translated transcript
+       Store summary in original language
+       Store translated summary in the selected language
+       File name convention: TIMESTAMP-VIDEO_ID-LLM_MODEL-SUMMARY_TYPE.txt
 
 Project Structure
 

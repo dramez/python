@@ -16,11 +16,11 @@ class FileUtils:
     
     def save_transcript(self, content, filepath):
         """
-        Save content to a file with timestamp.
+        Save content to a file with timestamp header.
         
         Args:
             content (str): Content to save
-            filepath (str): Path where to save the file
+            filepath (str): Full path where to save the file
         """
         try:
             # Ensure directory exists
@@ -36,7 +36,8 @@ class FileUtils:
             with open(filepath, 'w', encoding='utf-8') as f:
                 f.write(header + content)
             
-            print(f"   Saved to: {filepath}")
+            filename = os.path.basename(filepath)
+            print(f"   Saved: {filename}")
             
         except Exception as e:
             print(f"Error saving file {filepath}: {str(e)}")
